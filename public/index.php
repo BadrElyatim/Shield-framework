@@ -12,7 +12,10 @@ $env = Dotenv::createImmutable(base_path());
 $env->load();
 
 dump(DB::table('city')
+    ->select('city_id')
     ->where('city_id', '>', '550')
+    ->where('city', '=', 'Usak')
     ->get());
+
 
 app()->run();

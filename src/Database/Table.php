@@ -6,6 +6,8 @@ class Table {
     protected $table;
     protected $connection;
 
+    protected array $select = [];
+
     protected array $where = [];
     
 
@@ -15,40 +17,51 @@ class Table {
     }
 
     public function get() {
-        if (count($this->where) == 0) {
-            return $this->connection->query("select * from $this->table")->fetchAll();
-        }
+        $sql = $this->toSQL();
 
-        $condition = "";
-        foreach($this->where as $column => $value) {
-            $operation = $value[0];
-            if ($column == array_key_last($this->where)) {
-                $condition .= $column . " $operation :$column";
-            }
-            else {
-                $condition .= $column . " $operation :$column" . ' AND ';
-            }
-        }
+        return $this->connection->query($sql)->fetchAll(); 
+    }
 
-        $conditions = array_map(function($c) {
-            return $c[1]; 
-        }, $this->where);
-        
-        
-
-        $query = $this->connection->prepare("select * from $this->table where $condition");
-        $query->execute($conditions);
-        return $query->fetchAll();
-        
+    public function select(...$columns) {
+        $this->select = $columns;
+        return $this;
     }
 
     public function where(string $column, string $operation = '=', string $value) {
-        $this->where[$column][0] = $operation; 
-        $this->where[$column][1] = $value; 
+        $this->where[$column] = $operation .= " $value"; 
         return $this;
     }
 
     public function find(int $rows) {
         return $this->connection->query("select * from $this->table limit $rows")->fetchAll();
+    }
+
+    private function toSQL() {
+        $sql = "select ";
+
+        if (count($this->select) > 0)
+            $sql .= implode(', ', $this->select);
+        else
+            $sql .= '*';
+        
+        $sql .= " from $this->table";
+        
+        if (count($this->where) > 0) {
+            $sql .= " where ";
+            foreach($this->where as $column => $value) {
+                
+                $value = explode(' ', $value);
+                $operator = $value[0];
+                $condition = $this->connection->quote($value[1]);
+
+                if ($column == array_key_last($this->where)) {
+                    $sql .= $column . " $operator $condition ";
+                }
+                else {
+                    $sql .= $column . " $operator $condition " . ' AND ';
+                }
+            }
+        }
+        return $sql;
     }
 }
