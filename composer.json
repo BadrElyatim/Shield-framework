@@ -1,0 +1,19 @@
+{
+    "name": "flipb/shield",
+    "autoload": {
+        "psr-4": {
+            "Shield\\": "src",
+            "App\\": "App"
+        }
+    },
+    "authors": [
+        {
+            "name": "badr elyatim",
+            "email": "badr.elyatim@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.5",
+        "symfony/var-dumper": "^6.2"
+    }
+}

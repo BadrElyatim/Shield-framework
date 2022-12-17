@@ -1,0 +1,1 @@
+<h1>welcome <?= $name ?> age: <?= $age ?></h1>
